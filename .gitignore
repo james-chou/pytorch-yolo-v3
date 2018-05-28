@@ -99,3 +99,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# yolov3 weights
+yolov3.weights

@@ -12,7 +12,7 @@ import pandas as pd
 import random 
 import pickle as pkl
 import argparse
-
+import pdb
 
 def get_test_input(input_dim, CUDA):
     img = cv2.imread("dog-cycle-car.png")
@@ -27,14 +27,16 @@ def get_test_input(input_dim, CUDA):
     
     return img_
 
-def prep_image(img, inp_dim):
+def prep_image(img, inp_dim, rotation):
     """
     Prepare image for inputting to the neural network. 
     
     Returns a Variable 
     """
+    rows,cols, channels = img.shape
+    M = cv2.getRotationMatrix2D((cols/2,rows/2),int(rotation),1)
+    orig_im = cv2.warpAffine(img,M,(cols,rows))
 
-    orig_im = img
     dim = orig_im.shape[1], orig_im.shape[0]
     img = (letterbox_image(orig_im, (inp_dim, inp_dim)))
     img_ = img[:,:,::-1].transpose((2,0,1)).copy()
@@ -78,6 +80,8 @@ def arg_parse():
     parser.add_argument("--reso", dest = 'reso', help = 
                         "Input resolution of the network. Increase to increase accuracy. Decrease to increase speed",
                         default = "416", type = str)
+    parser.add_argument("--rotation", dest = "rotation", help = "Angle for frame rotation in degrees", default = 0)
+    parser.add_argument("--det", dest = "det", help = "Directory to store video to")
     return parser.parse_args()
 
 
@@ -106,6 +110,7 @@ if __name__ == '__main__':
     assert inp_dim > 32
 
     if CUDA:
+        print("Cuda is available")
         model.cuda()
         
     model(get_test_input(inp_dim, CUDA), CUDA)
@@ -126,7 +131,7 @@ if __name__ == '__main__':
         if ret:
             
 
-            img, orig_im, dim = prep_image(frame, inp_dim)
+            img, orig_im, dim = prep_image(frame, inp_dim, args.rotation)
             
             im_dim = torch.FloatTensor(dim).repeat(1,2)                        
             
