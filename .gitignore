@@ -102,3 +102,4 @@ ENV/
 
 # yolov3 weights
 yolov3.weights
+det/

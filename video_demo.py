@@ -12,6 +12,7 @@ import pandas as pd
 import random 
 import pickle as pkl
 import argparse
+import pdb
 
 def get_test_input(input_dim, CUDA):
     img = cv2.imread("dog-cycle-car.png")
@@ -80,7 +81,7 @@ def arg_parse():
                         "Input resolution of the network. Increase to increase accuracy. Decrease to increase speed",
                         default = "416", type = str)
     parser.add_argument("--rotation", dest = "rotation", help = "Angle for frame rotation in degrees", default = 0)
-    parser.add_argument("--det", dest = "det", help = "Directory to store video to")
+    parser.add_argument("--det", dest = "det", help = "Directory to store video to", default="det", type = str)
     return parser.parse_args()
 
 
@@ -122,6 +123,13 @@ if __name__ == '__main__':
     
     assert cap.isOpened(), 'Cannot capture source'
     
+    path = "{}/det_{}.avi".format(args.det, videofile.split('/')[-1])
+    print("Path is " + path)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter(path, fourcc, 29, (width, height))
+
     frames = 0
     start = time.time()    
     while cap.isOpened():
@@ -146,12 +154,12 @@ if __name__ == '__main__':
             if type(output) == int:
                 frames += 1
                 print("FPS of the video is {:5.2f}".format( frames / (time.time() - start)))
-                cv2.imshow("frame", orig_im)
-                key = cv2.waitKey(1)
-                if key & 0xFF == ord('q'):
-                    break
+                #cv2.imshow("frame", orig_im)
+                #key = cv2.waitKey(1)
+                #if key & 0xFF == ord('q'):
+                #    break
+                out.write(orig_im)
                 continue
-            
             
 
             
@@ -172,17 +180,21 @@ if __name__ == '__main__':
             
             list(map(lambda x: write(x, orig_im), output))
             
+            #cv2.imshow("frame", orig_im)
             
-            cv2.imshow("frame", orig_im)
-            key = cv2.waitKey(1)
-            if key & 0xFF == ord('q'):
-                break
+            out.write(orig_im) 
+
+            #key = cv2.waitKey(1)
+            #if key & 0xFF == ord('q'):
+            #    break
             frames += 1
             print("FPS of the video is {:5.2f}".format( frames / (time.time() - start)))
 
             
         else:
-            break
+            cap.release()
+            out.release()
+            cv2.destroyAllWindows()
     
 
     
