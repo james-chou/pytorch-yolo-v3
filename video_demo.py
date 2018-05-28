@@ -12,7 +12,6 @@ import pandas as pd
 import random 
 import pickle as pkl
 import argparse
-import pdb
 
 def get_test_input(input_dim, CUDA):
     img = cv2.imread("dog-cycle-car.png")
