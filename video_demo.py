@@ -12,6 +12,8 @@ import pandas as pd
 import random 
 import pickle as pkl
 import argparse
+from RecorderThread import RecorderThread
+from queue import Queue
 import pdb
 
 def get_test_input(input_dim, CUDA):
@@ -128,7 +130,10 @@ if __name__ == '__main__':
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(path, fourcc, 29, (width, height))
+
+    queue = Queue()
+    recorderthread = RecorderThread(queue, './output', fourcc, (width, height))
+    recorderthread.start()
 
     frames = 0
     start = time.time()    
@@ -158,7 +163,7 @@ if __name__ == '__main__':
                 #key = cv2.waitKey(1)
                 #if key & 0xFF == ord('q'):
                 #    break
-                out.write(orig_im)
+                queue.put(orig_im)
                 continue
             
 
@@ -182,7 +187,7 @@ if __name__ == '__main__':
             
             #cv2.imshow("frame", orig_im)
             
-            out.write(orig_im) 
+            queue.put(orig_im) 
 
             #key = cv2.waitKey(1)
             #if key & 0xFF == ord('q'):
@@ -193,7 +198,7 @@ if __name__ == '__main__':
             
         else:
             cap.release()
-            out.release()
+            recorderthread.release()
             cv2.destroyAllWindows()
     
 
